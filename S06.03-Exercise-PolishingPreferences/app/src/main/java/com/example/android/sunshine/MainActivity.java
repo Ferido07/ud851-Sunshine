@@ -17,12 +17,14 @@ package com.example.android.sunshine;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -41,7 +43,8 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements
         ForecastAdapter.ForecastAdapterOnClickHandler,
-        // TODO (3) Implement OnSharedPreferenceChangeListener on MainActivity
+        // COMPLETED (3) Implement OnSharedPreferenceChangeListener on MainActivity
+        SharedPreferences.OnSharedPreferenceChangeListener,
         LoaderCallbacks<String[]> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -55,8 +58,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final int FORECAST_LOADER_ID = 0;
 
-    // TODO (4) Add a private static boolean flag for preference updates and initialize it to false
-
+    // COMPLETED (4) Add a private static boolean preferenceChangedFlag for preference updates and initialize it to false
+    private static boolean preferenceChangedFlag = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements
          * This ID will uniquely identify the Loader. We can use it, for example, to get a handle
          * on our Loader at a later point in time through the support LoaderManager.
          */
-        int loaderId = FORECAST_LOADER_ID;
+        //int loaderId = FORECAST_LOADER_ID;
 
         /*
          * From MainActivity, we have implemented the LoaderCallbacks interface with the type of
@@ -136,18 +139,20 @@ public class MainActivity extends AppCompatActivity implements
          * callback. In our case, we don't actually use the Bundle, but it's here in case we wanted
          * to.
          */
-        Bundle bundleForLoader = null;
+        //Bundle bundleForLoader = null;
 
         /*
          * Ensures a loader is initialized and active. If the loader doesn't already exist, one is
          * created and (if the activity/fragment is currently started) starts the loader. Otherwise
          * the last created loader is re-used.
          */
-        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+        getSupportLoaderManager().initLoader(FORECAST_LOADER_ID,null /*bundleForLoader*/, callback);
 
         Log.d(TAG, "onCreate: registering preference changed listener");
 
-        // TODO (6) Register MainActivity as a OnSharedPreferenceChangedListener in onCreate
+        // COMPLETED (6) Register MainActivity as a OnSharedPreferenceChangedListener in onCreate
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -271,8 +276,8 @@ public class MainActivity extends AppCompatActivity implements
      * open the Common Intents page
      */
     private void openLocationInMap() {
-        // TODO (9) Use preferred location rather than a default location to display in the map
-        String addressString = "1600 Ampitheatre Parkway, CA";
+        // COMPLETED (9) Use preferred location rather than a default location to display in the map
+        String addressString = SunshinePreferences.getPreferredWeatherLocation(this);
         Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -327,9 +332,26 @@ public class MainActivity extends AppCompatActivity implements
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
-    // TODO (7) In onStart, if preferences have been changed, refresh the data and set the flag to false
+    // COMPLETED (7) In onStart, if preferences have been changed, refresh the data and set the preferenceChangedFlag to false
 
-    // TODO (8) Override onDestroy and unregister MainActivity as a SharedPreferenceChangedListener
+    @Override
+    protected void onStart() {
+        super.onStart();
+        invalidateData();
+        getSupportLoaderManager().restartLoader(FORECAST_LOADER_ID,null,this);
+        preferenceChangedFlag = false;
+
+    }
+
+    // COMPLETED (8) Override onDestroy and unregister MainActivity as a SharedPreferenceChangedListener
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -365,5 +387,10 @@ public class MainActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    // TODO (5) Override onSharedPreferenceChanged to set the preferences flag to true
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        preferenceChangedFlag = true;
+    }
+
+    // COMPLETED (5) Override onSharedPreferenceChanged to set the preferences preferenceChangedFlag to true
 }
