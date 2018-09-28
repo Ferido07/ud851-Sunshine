@@ -46,15 +46,17 @@ public class MainActivity extends AppCompatActivity implements
     private final String TAG = MainActivity.class.getSimpleName();
 
 //  COMPLETED (16) Create a String array containing the names of the desired data columns from our ContentProvider
-    String[] dataColumns = new String[]{
-        WeatherContract.WeatherEntry.COLUMN_DATE, WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-        WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+    public static final String[] MAIN_FORECAST_PROJECTION = new String[]{
+        WeatherContract.WeatherEntry.COLUMN_DATE,
+        WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+        WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+        WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
     };
 //  COMPLETED (17) Create constant int values representing each column name's position above
-    final int DATE_COLUMN_POSITION = 0;
-    final int WEATHER_ID_COLUMN_POSITION = 1;
-    final int MAX_TEMP_COLUMN_POSITION = 2;
-    final int MIN_TEMP_COLUMN_POSITION = 3;
+    public static final int DATE_COLUMN_POSITION = 0;
+    public static final int WEATHER_ID_COLUMN_POSITION = 1;
+    public static final int MAX_TEMP_COLUMN_POSITION = 2;
+    public static final int MIN_TEMP_COLUMN_POSITION = 3;
 //  COMPLETED (37) Remove the error TextView
 
     /*
@@ -200,10 +202,28 @@ public class MainActivity extends AppCompatActivity implements
 //      COMPLETED (24) Remove the loadInBackground method declaration
 //      COMPLETED (25) Remove the deliverResult method declaration
 //          COMPLETED (22) If the loader requested is our forecast loader, return the appropriate CursorLoader
-        if (id == ID_FORECAST_LOADER)
-            return new CursorLoader(this);
-        else
-            return null;
+        if (id == ID_FORECAST_LOADER){
+            /* URI for all rows of weather data in our weather table */
+            Uri forecastQueryUri = WeatherContract.WeatherEntry.CONTENT_URI;
+            /* Sort order: Ascending by date */
+            String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+            /*
+             * A SELECTION in SQL declares which rows you'd like to return. In our case, we
+             * want all weather data from today onwards that is stored in our weather table.
+             * We created a handy method to do that in our WeatherEntry class.
+             */
+            String selection = WeatherContract.WeatherEntry.getSqlSelectForTodayOnwards();
+
+            return new CursorLoader(this,
+                    forecastQueryUri,
+                    MAIN_FORECAST_PROJECTION,
+                    selection,
+                    null,
+                    sortOrder);
+        }
+        else{
+            throw new RuntimeException("Loader Not Implemented: " + id);
+        }
     }
 
 //  COMPLETED (26) Change onLoadFinished parameter to a Loader<Cursor> instead of a Loader<String[]>

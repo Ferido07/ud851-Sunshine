@@ -23,7 +23,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.SunshineDateUtils;
 import com.example.android.sunshine.utilities.SunshineWeatherUtils;
 
@@ -105,15 +104,11 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
         mCursor.moveToPosition(position);
 //      COMPLETED (7) Generate a weather summary with the date, description, high and low
         String weatherSummary;
-        int dateIndex = mCursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
-        int minTempIndex = mCursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
-        int maxTempIndex = mCursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
-        int weatherIdIndex = mCursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID);
 
-        long date = mCursor.getLong(dateIndex);
-        float minTemp = mCursor.getFloat(minTempIndex);
-        float maxTemp = mCursor.getFloat(maxTempIndex);
-        int weatherId = mCursor.getInt(weatherIdIndex);
+        long date = mCursor.getLong(MainActivity.DATE_COLUMN_POSITION);
+        float minTemp = mCursor.getFloat(MainActivity.MIN_TEMP_COLUMN_POSITION);
+        float maxTemp = mCursor.getFloat(MainActivity.MAX_TEMP_COLUMN_POSITION);
+        int weatherId = mCursor.getInt(MainActivity.WEATHER_ID_COLUMN_POSITION);
 
         String dateString = SunshineDateUtils.getFriendlyDateString(mContext,date,true);
         String weatherCondition = SunshineWeatherUtils.getStringForWeatherCondition(mContext,weatherId);
@@ -143,12 +138,8 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
 //  COMPLETED (11) Create a new method that allows you to swap Cursors.
 //      COMPLETED (12) After the new Cursor is set, call notifyDataSetChanged
     public void swapCursor(Cursor cursor){
-        if (cursor != null){
-            Cursor temp = mCursor;
-            mCursor = cursor;
-            cursor = temp;
-            notifyDataSetChanged();
-        }
+        mCursor = cursor;
+        notifyDataSetChanged();
     }
 
     /**
