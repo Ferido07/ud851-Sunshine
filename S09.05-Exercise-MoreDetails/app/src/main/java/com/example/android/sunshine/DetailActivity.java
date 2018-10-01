@@ -187,7 +187,7 @@ public class DetailActivity extends AppCompatActivity implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data != null && data.getCount() != 0){
+        if (data != null && data.moveToFirst()){
             String dateString =SunshineDateUtils.getFriendlyDateString(
                     this, data.getLong(DetailActivity.INDEX_WEATHER_DATE),true);
             mWeatherDate.setText(dateString);
@@ -213,6 +213,8 @@ public class DetailActivity extends AppCompatActivity implements
                     SunshineWeatherUtils.formatHighLows(this, maxTemp, minTemp);
             mForecastSummary = dateString + " - " + description + " - " + highAndLowTemperature;
         }
+        else
+            return;
     }
 
     @Override

@@ -178,7 +178,7 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
         @Override
         public void onClick(View v) {
 //          COMPLETED (37) Instead of passing the String for the clicked item, pass the date from the cursor
-           // mCursor.moveToPosition(getAdapterPosition());
+            mCursor.moveToPosition(getAdapterPosition());
             mClickHandler.onClick(mCursor.getLong(MainActivity.INDEX_WEATHER_DATE));
         }
     }
