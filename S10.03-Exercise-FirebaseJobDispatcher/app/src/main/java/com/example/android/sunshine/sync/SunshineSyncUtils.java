@@ -22,17 +22,81 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.example.android.sunshine.data.WeatherContract;
+import com.firebase.jobdispatcher.Constraint;
+import com.firebase.jobdispatcher.Driver;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.Trigger;
+
+import java.util.concurrent.TimeUnit;
 
 public class SunshineSyncUtils {
 
-//  TODO (10) Add constant values to sync Sunshine every 3 - 4 hours
-
+//  COMPLETED (10) Add constant values to sync Sunshine every 3 - 4 hours
+    private static final int SYNC_INTERVAL_MINUTES = 180;
+    private static final int SYNC_INTERVAL_SECONDS = (int) (TimeUnit.MINUTES.toSeconds(SYNC_INTERVAL_MINUTES));
+    private static final int SYNC_FLEXTIME_SECONDS = (int) (TimeUnit.MINUTES.toSeconds(60));
     private static boolean sInitialized;
 
-//  TODO (11) Add a sync tag to identify our sync job
+//  COMPLETED (11) Add a sync tag to identify our sync job
+    private static final String SYNC_JOB_TAG = "sync_job_tag";
 
-//  TODO (12) Create a method to schedule our periodic weather sync
+//  COMPLETED (12) Create a method to schedule our periodic weather sync
+    private static void scheduleSync(Context context){
+        Driver driver = new GooglePlayDriver(context);
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(driver);
 
+        /* Create the Job to periodically create reminders to drink water */
+        Job constraintReminderJob = dispatcher.newJobBuilder()
+                /* The Service that will be used to write to preferences */
+                .setService(SunshineFirebaseJobService.class)
+                /*
+                 * Set the UNIQUE tag used to identify this Job.
+                 */
+                .setTag(SYNC_JOB_TAG)
+                /*
+                 * Network constraints on which this Job should run. In this app, we're using the
+                 * device charging constraint so that the job only executes if the device is
+                 * charging.
+                 *
+                 * In a normal app, it might be a good idea to include a preference for this,
+                 * as different users may have different preferences on when you should be
+                 * syncing your application's data.
+                 */
+                .setConstraints(Constraint.DEVICE_CHARGING)
+                /*
+                 * setLifetime sets how long this job should persist. The options are to keep the
+                 * Job "forever" or to have it die the next time the device boots up.
+                 */
+                .setLifetime(Lifetime.FOREVER)
+                /*
+                 * We want these reminders to continuously happen, so we tell this Job to recur.
+                 */
+                .setRecurring(true)
+                /*
+                 * We want the reminders to happen every 15 minutes or so. The first argument for
+                 * Trigger class's static executionWindow method is the start of the time frame
+                 * when the
+                 * job should be performed. The second argument is the latest point in time at
+                 * which the data should be synced. Please note that this end time is not
+                 * guaranteed, but is more of a guideline for FirebaseJobDispatcher to go off of.
+                 */
+                .setTrigger(Trigger.executionWindow(
+                        SYNC_INTERVAL_SECONDS,
+                        SYNC_INTERVAL_SECONDS + SYNC_FLEXTIME_SECONDS))
+                /*
+                 * If a Job with the tag with provided already exists, this new job will replace
+                 * the old one.
+                 */
+                .setReplaceCurrent(true)
+                /* Once the Job is ready, call the builder's build method to return the Job */
+                .build();
+
+        /* Schedule the Job with the dispatcher */
+        dispatcher.schedule(constraintReminderJob);
+    }
     /**
      * Creates periodic sync tasks and checks to see if an immediate sync is required. If an
      * immediate sync is required, this method will take care of making sure that sync occurs.
@@ -50,8 +114,8 @@ public class SunshineSyncUtils {
 
         sInitialized = true;
 
-//      TODO (13) Call the method you created to schedule a periodic weather sync
-
+//      COMPLETED (13) Call the method you created to schedule a periodic weather sync
+        scheduleSync(context);
         /*
          * We need to check to see if our ContentProvider has data to display in our forecast
          * list. However, performing a query on the main thread is a bad idea as this may
