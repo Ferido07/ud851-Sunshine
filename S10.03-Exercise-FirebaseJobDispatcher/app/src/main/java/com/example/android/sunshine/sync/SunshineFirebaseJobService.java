@@ -22,18 +22,18 @@ import com.firebase.jobdispatcher.JobService;
 
 // COMPLETED (3) Add a class called SunshineFirebaseJobService that extends jobdispatcher.JobService
 public class SunshineFirebaseJobService extends JobService {
-    AsyncTask mFetchWeatherTask;
+    AsyncTask<Void,Void,Void> mFetchWeatherTask;
     @Override
     public boolean onStartJob(final JobParameters jobParameters) {
-        mFetchWeatherTask = new AsyncTask() {
+        mFetchWeatherTask = new AsyncTask<Void,Void,Void>() {
             @Override
-            protected Object doInBackground(Object[] objects) {
-                SunshineSyncUtils.startImmediateSync(SunshineFirebaseJobService.this);
+            protected Void doInBackground(Void... voids) {
+                SunshineSyncTask.syncWeather(getApplicationContext());
                 return null;
             }
 
             @Override
-            protected void onPostExecute(Object o) {
+            protected void onPostExecute(Void aVoid) {
                 jobFinished(jobParameters,false);
             }
         };

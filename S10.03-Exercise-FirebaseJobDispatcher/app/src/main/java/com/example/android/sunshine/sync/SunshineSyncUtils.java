@@ -65,7 +65,7 @@ public class SunshineSyncUtils {
                  * as different users may have different preferences on when you should be
                  * syncing your application's data.
                  */
-                .setConstraints(Constraint.DEVICE_CHARGING)
+                .setConstraints(Constraint.ON_ANY_NETWORK)
                 /*
                  * setLifetime sets how long this job should persist. The options are to keep the
                  * Job "forever" or to have it die the next time the device boots up.
